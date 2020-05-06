@@ -13,21 +13,23 @@ object HttpServer extends App with Directives{
   import system.dispatcher
   val port=8080
   val host="0.0.0.0"//localhost
-  val route:Route =pathPrefix("greetings"){
+  val route:Route =concat(
+    post{
+      path("register"){
+        entity(as[String]){name=>
+          complete(s"You have been successfully registered in Akka http mailing list $name")
+        }
+      }
+    },
+    path("greetings"){
     //Segment is used to extract path parameter from the request
     path(Segment) {name=>
       get {  //get rejects all non-GET requests
         complete(StatusCodes.OK, s"Accept warm greetings from Akka Http Server $name")
       }
-    }~
-    post{
-      path("register"){
-      entity(as[String]){name=>
-        complete(s"You have been successfully registered in Akka http mailing list $name")
-      }
     }
-  }
-  }
+
+  })
   val bindingFuture=Http().bindAndHandle(route,host,port)
   //bind this route to this ip & port
   // or a set of routes to this ip & port
