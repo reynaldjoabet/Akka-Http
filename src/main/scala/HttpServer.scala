@@ -1,5 +1,6 @@
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
 
@@ -12,16 +13,20 @@ object HttpServer extends App with Directives{
   import system.dispatcher
   val port=8080
   val host="0.0.0.0"//localhost
-  val route:Route =path("hello"){
-    //get rejects all non-GET requests
-    get {
-      complete("Hello from Akka Http Server")
+  val route:Route =pathPrefix("greetings"){
+    //Segment is used to extract path parameter from the request
+    path(Segment) {name=>
+      get {  //get rejects all non-GET requests
+        complete(StatusCodes.OK, s"Accept warm greetings from Akka Http Server $name")
+      }
     }~
     post{
-      entity(as[String]){num=>
-        complete(s"Here is the number $num")
+      path("register"){
+      entity(as[String]){name=>
+        complete(s"You have been successfully registered in Akka http mailing list $name")
       }
     }
+  }
   }
   val bindingFuture=Http().bindAndHandle(route,host,port)
   //bind this route to this ip & port
